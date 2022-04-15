@@ -14,10 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/melbahja/goph"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
+
+	"github.com/vimiix/goph"
 )
 
 //
@@ -133,7 +134,7 @@ func main() {
 
 	client, err = goph.NewConn(&goph.Config{
 		User:     user,
-		Addr:     addr,
+		Host:     addr,
 		Port:     port,
 		Auth:     auth,
 		Callback: VerifyHost,
@@ -226,7 +227,7 @@ func getSftp(client *goph.Client) *sftp.Client {
 func playWithSSHJustForTestingThisProgram(client *goph.Client) {
 
 	fmt.Println("Welcome To Goph :D")
-	fmt.Printf("Connected to %s\n", client.Config.Addr)
+	fmt.Printf("Connected to %s\n", client.Config.Host)
 	fmt.Println("Type your shell command and enter.")
 	fmt.Println("To download file from remote type: download remote/path local/path")
 	fmt.Println("To upload file to remote type: upload local/path remote/path")

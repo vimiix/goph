@@ -1,7 +1,7 @@
 <div align="center">
 	<h1>Golang SSH Client.</h1>
-	<a href="https://github.com/melbahja/goph">
-		<img src="https://github.com/melbahja/goph/raw/master/.github/goph.png" width="200">
+	<a href="https://github.com/vimiix/goph">
+		<img src="https://github.com/vimiix/goph/raw/master/.github/goph.png" width="200">
 	</a>
 	<h4 align="center">
 		Fast and easy golang ssh client module.
@@ -17,14 +17,18 @@
 	<a href="#-license">License</a>
 </p>
 
+## 2022-4-15
+
+> support to connect via proxy config
+
 
 ## 🚀&nbsp; Installation and Documentation
 
 ```bash
-go get github.com/melbahja/goph
+go get github.com/vimiix/goph
 ```
 
-You can find the docs at [go docs](https://pkg.go.dev/github.com/melbahja/goph).
+You can find the docs at [go docs](https://pkg.go.dev/github.com/vimiix/goph).
 
 ## 🤘&nbsp; Features
 
@@ -49,7 +53,7 @@ package main
 import (
 	"log"
 	"fmt"
-	"github.com/melbahja/goph"
+	"github.com/vimiix/goph"
 )
 
 func main() {

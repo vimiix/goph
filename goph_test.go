@@ -6,7 +6,8 @@ import (
 	"net"
 	"testing"
 
-	"github.com/melbahja/goph"
+	"github.com/vimiix/goph"
+
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -64,7 +65,7 @@ func gophAuthTest(t *testing.T) {
 	newServer("2020")
 
 	_, err := goph.NewConn(&goph.Config{
-		Addr:     "127.0.10.10",
+		Host:     "127.0.10.10",
 		Port:     2020,
 		User:     "melbahja",
 		Auth:     goph.Password("123456"),
@@ -81,7 +82,7 @@ func gophRunTest(t *testing.T) {
 	newServer("2021")
 
 	client, err := goph.NewConn(&goph.Config{
-		Addr:     "127.0.10.10",
+		Host:     "127.0.10.10",
 		Port:     2021,
 		User:     "melbahja",
 		Auth:     goph.Password("123456"),
@@ -104,7 +105,7 @@ func gophWrongPassTest(t *testing.T) {
 	newServer("2022")
 
 	_, err := goph.NewConn(&goph.Config{
-		Addr:     "127.0.10.10",
+		Host:     "127.0.10.10",
 		Port:     2022,
 		User:     "melbahja",
 		Auth:     goph.Password("12345"),

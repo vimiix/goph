@@ -25,18 +25,22 @@ type Client struct {
 type Config struct {
 	Auth           Auth
 	User           string
-	Addr           string
+	Host           string
 	Port           uint
+	Password       string
+	KeyPath        string
+	Passphrase     string
 	Timeout        time.Duration
 	Callback       ssh.HostKeyCallback
 	BannerCallback ssh.BannerCallback
+	Proxy          *Config
 }
 
 // DefaultTimeout is the timeout of ssh client connection.
 var DefaultTimeout = 20 * time.Second
 
 // New starts a new ssh connection, the host public key must be in known hosts.
-func New(user string, addr string, auth Auth) (c *Client, err error) {
+func New(user string, host string, auth Auth) (c *Client, err error) {
 
 	callback, err := DefaultKnownHosts()
 
@@ -46,7 +50,7 @@ func New(user string, addr string, auth Auth) (c *Client, err error) {
 
 	c, err = NewConn(&Config{
 		User:     user,
-		Addr:     addr,
+		Host:     host,
 		Port:     22,
 		Auth:     auth,
 		Timeout:  DefaultTimeout,
@@ -62,7 +66,7 @@ func New(user string, addr string, auth Auth) (c *Client, err error) {
 func NewUnknown(user string, addr string, auth Auth) (*Client, error) {
 	return NewConn(&Config{
 		User:     user,
-		Addr:     addr,
+		Host:     addr,
 		Port:     22,
 		Auth:     auth,
 		Timeout:  DefaultTimeout,
@@ -83,13 +87,64 @@ func NewConn(config *Config) (c *Client, err error) {
 
 // Dial starts a client connection to SSH server based on config.
 func Dial(proto string, c *Config) (*ssh.Client, error) {
-	return ssh.Dial(proto, net.JoinHostPort(c.Addr, fmt.Sprint(c.Port)), &ssh.ClientConfig{
+	if c.Proxy != nil {
+		return getClientViaProxy(proto, c.Proxy)
+	}
+
+	targetConfig, err := getSSHConfig(c)
+	if err != nil {
+		return nil, err
+	}
+	return ssh.Dial(proto, net.JoinHostPort(c.Host, fmt.Sprint(c.Port)), targetConfig)
+}
+
+func getClientViaProxy(proto string, c *Config) (*ssh.Client, error) {
+	targetSSHConfig, err := getSSHConfig(c)
+	if err != nil {
+		return nil, err
+	}
+	proxyConfig, err := getSSHConfig(c.Proxy)
+	if err != nil {
+		return nil, err
+	}
+	proxyClient, err := ssh.Dial(proto, net.JoinHostPort(c.Proxy.Host, fmt.Sprint(c.Proxy.Port)), proxyConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := proxyClient.Dial(proto, net.JoinHostPort(c.Host, fmt.Sprint(c.Port)))
+	if err != nil {
+		return nil, err
+	}
+
+	ncc, chans, reqs, err := ssh.NewClientConn(conn, net.JoinHostPort(c.Host, fmt.Sprint(c.Port)), targetSSHConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return ssh.NewClient(ncc, chans, reqs), nil
+}
+
+func getSSHConfig(c *Config) (*ssh.ClientConfig, error) {
+	var auth = Auth{}
+	auth = append(auth, c.Auth...)
+	if c.KeyPath != "" {
+		keyAuth, err := Key(c.KeyPath, c.Passphrase)
+		if err != nil {
+			return nil, err
+		}
+		auth = append(auth, keyAuth...)
+	}
+	if c.Password != "" {
+		auth = append(auth, ssh.Password(c.Password))
+	}
+	return &ssh.ClientConfig{
 		User:            c.User,
-		Auth:            c.Auth,
+		Auth:            auth,
 		Timeout:         c.Timeout,
 		HostKeyCallback: c.Callback,
 		BannerCallback:  c.BannerCallback,
-	})
+	}, nil
 }
 
 // Run starts a new SSH session and runs the cmd, it returns CombinedOutput and err if any.
