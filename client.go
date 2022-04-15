@@ -88,7 +88,7 @@ func NewConn(config *Config) (c *Client, err error) {
 // Dial starts a client connection to SSH server based on config.
 func Dial(proto string, c *Config) (*ssh.Client, error) {
 	if c.Proxy != nil {
-		return getClientViaProxy(proto, c.Proxy)
+		return getClientViaProxy(proto, c)
 	}
 
 	targetConfig, err := getSSHConfig(c)
@@ -127,7 +127,10 @@ func getClientViaProxy(proto string, c *Config) (*ssh.Client, error) {
 
 func getSSHConfig(c *Config) (*ssh.ClientConfig, error) {
 	var auth = Auth{}
-	auth = append(auth, c.Auth...)
+	if len(c.Auth) > 0 {
+		auth = append(auth, c.Auth...)
+	}
+
 	if c.KeyPath != "" {
 		keyAuth, err := Key(c.KeyPath, c.Passphrase)
 		if err != nil {
