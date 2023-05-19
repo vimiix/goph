@@ -133,10 +133,9 @@ func getSSHConfig(c *Config) (*ssh.ClientConfig, error) {
 
 	if c.KeyPath != "" {
 		keyAuth, err := Key(c.KeyPath, c.Passphrase)
-		if err != nil {
-			return nil, err
+		if err == nil {
+			auth = append(auth, keyAuth...)
 		}
-		auth = append(auth, keyAuth...)
 	}
 	if c.Password != "" {
 		auth = append(auth, ssh.Password(c.Password))
@@ -152,7 +151,6 @@ func getSSHConfig(c *Config) (*ssh.ClientConfig, error) {
 
 // Run starts a new SSH session and runs the cmd, it returns CombinedOutput and err if any.
 func (c Client) Run(cmd string) ([]byte, error) {
-
 	var (
 		err  error
 		sess *ssh.Session
@@ -161,13 +159,11 @@ func (c Client) Run(cmd string) ([]byte, error) {
 	if sess, err = c.NewSession(); err != nil {
 		return nil, err
 	}
-
 	defer sess.Close()
-
 	return sess.CombinedOutput(cmd)
 }
 
-// Run starts a new SSH session with context and runs the cmd. It returns CombinedOutput and err if any.
+// RunContext starts a new SSH session with context and runs the cmd. It returns CombinedOutput and err if any.
 func (c Client) RunContext(ctx context.Context, name string) ([]byte, error) {
 	cmd, err := c.CommandContext(ctx, name)
 	if err != nil {
@@ -179,16 +175,13 @@ func (c Client) RunContext(ctx context.Context, name string) ([]byte, error) {
 
 // Command returns new Cmd and error if any.
 func (c Client) Command(name string, args ...string) (*Cmd, error) {
-
 	var (
 		sess *ssh.Session
 		err  error
 	)
-
 	if sess, err = c.NewSession(); err != nil {
 		return nil, err
 	}
-
 	return &Cmd{
 		Path:    name,
 		Args:    args,
@@ -197,7 +190,7 @@ func (c Client) Command(name string, args ...string) (*Cmd, error) {
 	}, nil
 }
 
-// Command returns new Cmd with context and error, if any.
+// CommandContext returns new Cmd with context and error, if any.
 func (c Client) CommandContext(ctx context.Context, name string, args ...string) (*Cmd, error) {
 	cmd, err := c.Command(name, args...)
 	if err != nil {
@@ -205,7 +198,6 @@ func (c Client) CommandContext(ctx context.Context, name string, args ...string)
 	}
 
 	cmd.Context = ctx
-
 	return cmd, nil
 }
 
@@ -221,7 +213,6 @@ func (c Client) Close() error {
 
 // Upload a local file to remote server!
 func (c Client) Upload(localPath string, remotePath string) (err error) {
-
 	local, err := os.Open(localPath)
 	if err != nil {
 		return
@@ -246,7 +237,6 @@ func (c Client) Upload(localPath string, remotePath string) (err error) {
 
 // Download file from remote server!
 func (c Client) Download(remotePath string, localPath string) (err error) {
-
 	local, err := os.Create(localPath)
 	if err != nil {
 		return

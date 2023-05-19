@@ -15,7 +15,6 @@ import (
 
 // DefaultKnownHosts returns host key callback from default known hosts path, and error if any.
 func DefaultKnownHosts() (ssh.HostKeyCallback, error) {
-
 	path, err := DefaultKnownHostsPath()
 	if err != nil {
 		return nil, err
@@ -33,7 +32,6 @@ func KnownHosts(file string) (ssh.HostKeyCallback, error) {
 // it returns is the host found in known_hosts file and error, if the host found in
 // known_hosts file and error not nil that means public key mismatch, maybe MAN IN THE MIDDLE ATTACK! you should not handshake.
 func CheckKnownHost(host string, remote net.Addr, key ssh.PublicKey, knownFile string) (found bool, err error) {
-
 	var keyErr *knownhosts.KeyError
 
 	// Fallback to default known_hosts file
@@ -76,9 +74,8 @@ func CheckKnownHost(host string, remote net.Addr, key ssh.PublicKey, knownFile s
 	return false, nil
 }
 
-// AddKnownHost add a a host to known hosts file.
+// AddKnownHost add a host to known hosts file.
 func AddKnownHost(host string, remote net.Addr, key ssh.PublicKey, knownFile string) (err error) {
-
 	// Fallback to default known_hosts file
 	if knownFile == "" {
 		path, err := DefaultKnownHostsPath()
@@ -111,7 +108,6 @@ func AddKnownHost(host string, remote net.Addr, key ssh.PublicKey, knownFile str
 
 // DefaultKnownHostsPath returns default user knows hosts file.
 func DefaultKnownHostsPath() (string, error) {
-
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err

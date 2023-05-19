@@ -5,7 +5,6 @@ package goph
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 
@@ -25,9 +24,7 @@ func Password(pass string) Auth {
 
 // Key returns auth method from private key with or without passphrase.
 func Key(prvFile string, passphrase string) (Auth, error) {
-
 	signer, err := GetSigner(prvFile, passphrase)
-
 	if err != nil {
 		return nil, err
 	}
@@ -55,24 +52,17 @@ func UseAgent() (Auth, error) {
 
 // GetSigner returns ssh signer from private key file.
 func GetSigner(prvFile string, passphrase string) (ssh.Signer, error) {
-
 	var (
 		err    error
 		signer ssh.Signer
 	)
 
-	privateKey, err := ioutil.ReadFile(prvFile)
-
+	privateKey, err := os.ReadFile(prvFile)
 	if err != nil {
-
 		return nil, err
-
 	} else if passphrase != "" {
-
 		signer, err = ssh.ParsePrivateKeyWithPassphrase(privateKey, []byte(passphrase))
-
 	} else {
-
 		signer, err = ssh.ParsePrivateKey(privateKey)
 	}
 
